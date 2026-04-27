@@ -165,11 +165,25 @@ function NavBar({ scrolled }) {
       <a
         href="#"
         onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-        className="glass glass-hover rounded-full px-4 py-2 flex items-center gap-2"
+        className="glass glass-hover rounded-full px-4 py-2 flex items-center gap-3"
       >
-        <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse-slow" />
-        <span className="text-xs font-medium text-white/60 tracking-widest uppercase">
-          AI Strategy Portfolio
+        {/* X Diamond logomark */}
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="xgrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#3b82f6" />
+              <stop offset="100%" stopColor="#6366f1" />
+            </linearGradient>
+          </defs>
+          <rect x="3" y="3" width="18" height="18" rx="3" fill="url(#xgrad)" transform="rotate(45 12 12)" />
+          <line x1="9" y1="9" x2="15" y2="15" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+          <line x1="15" y1="9" x2="9" y2="15" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+        </svg>
+        {/* Divider */}
+        <div className="w-px h-3 bg-white/20" />
+        {/* Wordmark */}
+        <span className="text-xs font-light text-white/60 tracking-[0.2em] uppercase">
+          Tyler Danger
         </span>
       </a>
       <a
