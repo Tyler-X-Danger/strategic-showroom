@@ -170,20 +170,21 @@ function NavBar({ scrolled }) {
         {/* X Diamond logomark */}
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <linearGradient id="xgrad" x1="0" y1="0" x2="1" y2="1">
+            <linearGradient id="xgrad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
               <stop offset="0%" stopColor="#3b82f6" />
               <stop offset="100%" stopColor="#6366f1" />
             </linearGradient>
           </defs>
-          <rect x="3" y="3" width="18" height="18" rx="3" fill="url(#xgrad)" transform="rotate(45 12 12)" />
-          <line x1="9" y1="9" x2="15" y2="15" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
-          <line x1="15" y1="9" x2="9" y2="15" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+          {/* Diamond as explicit polygon — no transform, gradient renders correctly */}
+          <polygon points="12,1 23,12 12,23 1,12" fill="url(#xgrad)" />
+          <line x1="8.5" y1="8.5" x2="15.5" y2="15.5" stroke="white" strokeWidth="2" strokeLinecap="round" />
+          <line x1="15.5" y1="8.5" x2="8.5" y2="15.5" stroke="white" strokeWidth="2" strokeLinecap="round" />
         </svg>
         {/* Divider */}
         <div className="w-px h-3 bg-white/20" />
-        {/* Wordmark */}
+        {/* Wordmark — full name with X */}
         <span className="text-xs font-light text-white/60 tracking-[0.2em] uppercase">
-          Tyler Danger
+          Tyler X Danger
         </span>
       </a>
       <a
