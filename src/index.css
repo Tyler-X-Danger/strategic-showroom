@@ -8,6 +8,14 @@
 
 html {
   scroll-behavior: smooth;
+  /* Proximity snap: snaps to section boundaries only when you stop near one.
+     Does NOT trap the user mid-section like 'mandatory' would. */
+  scroll-snap-type: y proximity;
+}
+
+section {
+  scroll-snap-align: start;
+  scroll-snap-stop: normal;
 }
 
 body {

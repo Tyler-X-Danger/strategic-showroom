@@ -42,7 +42,8 @@ function useScrollY() {
   return y;
 }
 
-// Wraps any child and fades/slides it in when it enters the viewport.
+// Wraps any child and fades/slides in when entering the viewport,
+// fades/slides back out when leaving — works in both scroll directions.
 function Reveal({ children, delay = 0, className = "" }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
@@ -50,7 +51,7 @@ function Reveal({ children, delay = 0, className = "" }) {
     const el = ref.current;
     if (!el) return;
     const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
+      ([entry]) => setVisible(entry.isIntersecting),
       { threshold: 0.12 }
     );
     observer.observe(el);
