@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
   ExternalLink,
@@ -12,10 +13,65 @@ import {
   Clock,
   TrendingUp,
   CheckCircle2,
-  Circle,
 } from "lucide-react";
 
-// ─── Data ───────────────────────────────────────────────────────────────────
+// ─── Hooks ───────────────────────────────────────────────────────────────────
+
+function useScrollProgress() {
+  const [progress, setProgress] = useState(0);
+  useEffect(() => {
+    const onScroll = () => {
+      const el = document.documentElement;
+      const scrolled = el.scrollTop;
+      const total = el.scrollHeight - el.clientHeight;
+      setProgress(total > 0 ? scrolled / total : 0);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  return progress;
+}
+
+function useScrollY() {
+  const [y, setY] = useState(0);
+  useEffect(() => {
+    const onScroll = () => setY(window.scrollY);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  return y;
+}
+
+// Wraps any child and fades/slides it in when it enters the viewport.
+function Reveal({ children, delay = 0, className = "" }) {
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
+      { threshold: 0.12 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+  return (
+    <div
+      ref={ref}
+      className={className}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0px)" : "translateY(28px)",
+        transition: `opacity 0.65s ease ${delay}ms, transform 0.65s ease ${delay}ms`,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+// ─── Data ────────────────────────────────────────────────────────────────────
 
 const VERSIONS = [
   {
@@ -80,11 +136,31 @@ const STATS = [
   { value: "v2.0", unit: "RESO", label: "Compliance Standard" },
 ];
 
-// ─── Sub-components ──────────────────────────────────────────────────────────
+// ─── Components ──────────────────────────────────────────────────────────────
 
-function NavBar() {
+function ScrollProgressBar({ progress }) {
   return (
-    <nav className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 md:px-12 py-4">
+    <div className="fixed top-0 inset-x-0 z-[60] h-[2px] bg-transparent pointer-events-none">
+      <div
+        className="h-full bg-gradient-to-r from-blue-500 via-violet-500 to-cyan-400"
+        style={{ width: `${progress * 100}%`, transition: "width 0.1s linear" }}
+      />
+    </div>
+  );
+}
+
+function NavBar({ scrolled }) {
+  return (
+    <nav
+      className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 md:px-12 py-4 transition-all duration-500"
+      style={{
+        background: scrolled
+          ? "rgba(10,10,10,0.85)"
+          : "transparent",
+        backdropFilter: scrolled ? "blur(24px)" : "none",
+        borderBottom: scrolled ? "1px solid rgba(255,255,255,0.06)" : "1px solid transparent",
+      }}
+    >
       <div className="glass rounded-full px-4 py-2 flex items-center gap-2">
         <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse-slow" />
         <span className="text-xs font-medium text-white/60 tracking-widest uppercase">
@@ -103,11 +179,47 @@ function NavBar() {
   );
 }
 
-function HeroBlob({ className, color }) {
+// Animated mouse/chevron scroll cue — hides once user has scrolled
+function ScrollCue({ visible }) {
+  return (
+    <div
+      className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 pointer-events-none"
+      style={{ opacity: visible ? 0.45 : 0, transition: "opacity 0.6s ease" }}
+    >
+      {/* Mouse outline */}
+      <div className="w-6 h-10 rounded-full border border-white/30 flex items-start justify-center pt-2">
+        <div
+          className="w-1 h-2 rounded-full bg-white/60"
+          style={{ animation: "scrollDot 1.8s ease-in-out infinite" }}
+        />
+      </div>
+      {/* Two staggered chevrons */}
+      <div className="flex flex-col items-center -gap-1">
+        <ChevronRight
+          size={12}
+          className="rotate-90 text-white/40"
+          style={{ animation: "chevronFade 1.8s ease-in-out infinite" }}
+        />
+        <ChevronRight
+          size={12}
+          className="rotate-90 text-white/20 -mt-1"
+          style={{ animation: "chevronFade 1.8s ease-in-out 0.2s infinite" }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function HeroBlob({ className, color, parallaxY = 0 }) {
   return (
     <div
       className={`absolute rounded-full blur-3xl pointer-events-none ${className}`}
-      style={{ background: color }}
+      style={{
+        background: color,
+        transform: `translateY(${parallaxY}px)`,
+        transition: "transform 0.05s linear",
+        willChange: "transform",
+      }}
     />
   );
 }
@@ -124,21 +236,31 @@ function StatBadge({ value, unit, label }) {
   );
 }
 
-function HeroSection() {
+function HeroSection({ scrollY }) {
+  // Parallax: each blob moves at a different rate
+  const blob1Y = scrollY * 0.25;
+  const blob2Y = scrollY * 0.15;
+  const blob3Y = scrollY * 0.35;
+  // Hero content compresses slightly upward
+  const contentY = scrollY * 0.12;
+  const showCue = scrollY < 80;
+
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center px-6 pb-24 overflow-hidden">
-      {/* Background blobs */}
       <HeroBlob
         className="w-[700px] h-[700px] -top-48 -left-48 opacity-20"
         color="radial-gradient(circle, #3b82f6 0%, transparent 70%)"
+        parallaxY={blob1Y}
       />
       <HeroBlob
         className="w-[500px] h-[500px] top-1/3 -right-32 opacity-15"
         color="radial-gradient(circle, #6366f1 0%, transparent 70%)"
+        parallaxY={-blob2Y}
       />
       <HeroBlob
         className="w-[400px] h-[400px] bottom-0 left-1/3 opacity-10"
         color="radial-gradient(circle, #06b6d4 0%, transparent 70%)"
+        parallaxY={blob3Y}
       />
 
       {/* Grid overlay */}
@@ -151,66 +273,71 @@ function HeroSection() {
         }}
       />
 
-      <div className="relative z-10 max-w-5xl mx-auto text-center flex flex-col items-center gap-8">
+      <div
+        className="relative z-10 max-w-5xl mx-auto text-center flex flex-col items-center gap-8"
+        style={{ transform: `translateY(${-contentY}px)` }}
+      >
         {/* Badge */}
-        <div className="glass rounded-full px-5 py-2 flex items-center gap-3">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-          </span>
-          <span className="text-xs font-semibold text-white/70 tracking-wider uppercase">
-            Final Round Interview &nbsp;·&nbsp; Mickey Neuberger, CMO — Realtor.com
-          </span>
-        </div>
+        <Reveal>
+          <div className="glass rounded-full px-5 py-2 flex items-center gap-3">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+            </span>
+            <span className="text-xs font-semibold text-white/70 tracking-wider uppercase">
+              Final Round Interview &nbsp;·&nbsp; Mickey Neuberger, CMO — Realtor.com
+            </span>
+          </div>
+        </Reveal>
 
-        {/* Headline */}
-        <h1 className="text-5xl md:text-7xl font-black leading-[1.05] tracking-tight">
-          <span className="gradient-text">Architecting Agentic ROI</span>
-          <br />
-          <span className="text-white/90">for Enterprise Real Estate.</span>
-        </h1>
+        <Reveal delay={100}>
+          <h1 className="text-5xl md:text-7xl font-black leading-[1.05] tracking-tight">
+            <span className="gradient-text">Architecting Agentic ROI</span>
+            <br />
+            <span className="text-white/90">for Enterprise Real Estate.</span>
+          </h1>
+        </Reveal>
 
-        {/* Sub-headline */}
-        <p className="text-lg md:text-xl text-white/50 max-w-2xl leading-relaxed font-light">
-          Transforming manual bottlenecks into{" "}
-          <span className="text-white/80 font-medium">autonomous, RESO-compliant revenue engines</span>{" "}
-          — from FHA audit to full agentic platform in a single feedback loop.
-        </p>
+        <Reveal delay={180}>
+          <p className="text-lg md:text-xl text-white/50 max-w-2xl leading-relaxed font-light">
+            Transforming manual bottlenecks into{" "}
+            <span className="text-white/80 font-medium">autonomous, RESO-compliant revenue engines</span>{" "}
+            — from FHA audit to full agentic platform in a single feedback loop.
+          </p>
+        </Reveal>
 
-        {/* CTAs */}
-        <div className="flex flex-wrap gap-3 justify-center">
-          <a
-            href="https://intelligenceapp.streamlit.app/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-7 py-3.5 rounded-full transition-all duration-300 hover:shadow-[0_0_30px_rgba(59,130,246,0.4)] text-sm"
-          >
-            View V2 Intelligence Hub
-            <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
-          </a>
-          <a
-            href="https://intelligencehub-three.vercel.app/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="glass glass-hover flex items-center gap-2 text-white/70 hover:text-white font-medium px-7 py-3.5 rounded-full text-sm"
-          >
-            View V1 Prototype <ExternalLink size={14} />
-          </a>
-        </div>
+        <Reveal delay={260}>
+          <div className="flex flex-wrap gap-3 justify-center">
+            <a
+              href="https://intelligenceapp.streamlit.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-7 py-3.5 rounded-full transition-all duration-300 hover:shadow-[0_0_30px_rgba(59,130,246,0.4)] text-sm"
+            >
+              View V2 Intelligence Hub
+              <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+            </a>
+            <a
+              href="https://intelligencehub-three.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="glass glass-hover flex items-center gap-2 text-white/70 hover:text-white font-medium px-7 py-3.5 rounded-full text-sm"
+            >
+              View V1 Prototype <ExternalLink size={14} />
+            </a>
+          </div>
+        </Reveal>
 
-        {/* Stats */}
-        <div className="flex flex-wrap gap-3 justify-center mt-4">
-          {STATS.map((s) => (
-            <StatBadge key={s.unit} {...s} />
-          ))}
-        </div>
+        <Reveal delay={340}>
+          <div className="flex flex-wrap gap-3 justify-center mt-4">
+            {STATS.map((s) => (
+              <StatBadge key={s.unit} {...s} />
+            ))}
+          </div>
+        </Reveal>
       </div>
 
-      {/* Scroll indicator */}
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-30">
-        <span className="text-xs tracking-widest uppercase text-white/60">Scroll</span>
-        <div className="w-px h-8 bg-gradient-to-b from-white/60 to-transparent" />
-      </div>
+      <ScrollCue visible={showCue} />
     </section>
   );
 }
@@ -220,12 +347,9 @@ function VersionCard({ version }) {
   return (
     <div
       className={`glass rounded-3xl p-8 flex flex-col gap-6 transition-all duration-500 ${
-        version.muted
-          ? "opacity-70 hover:opacity-90"
-          : "glow-blue-border glow-blue"
+        version.muted ? "opacity-70 hover:opacity-90" : "glow-blue-border glow-blue"
       }`}
     >
-      {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
@@ -256,10 +380,8 @@ function VersionCard({ version }) {
         </div>
       </div>
 
-      {/* Description */}
       <p className="text-sm text-white/50 leading-relaxed">{version.description}</p>
 
-      {/* Tags */}
       <div className="flex flex-wrap gap-2">
         {version.tags.map((tag) => (
           <span
@@ -275,15 +397,12 @@ function VersionCard({ version }) {
         ))}
       </div>
 
-      {/* Link */}
       <a
         href={version.url}
         target="_blank"
         rel="noopener noreferrer"
         className={`group mt-auto flex items-center gap-2 text-sm font-semibold transition-colors ${
-          version.muted
-            ? "text-white/30 hover:text-white/60"
-            : "text-blue-400 hover:text-blue-300"
+          version.muted ? "text-white/30 hover:text-white/60" : "text-blue-400 hover:text-blue-300"
         }`}
       >
         {version.muted ? "View Prototype" : "Launch Intelligence Hub"}
@@ -296,62 +415,67 @@ function VersionCard({ version }) {
 function VelocitySection() {
   return (
     <section className="relative px-6 md:px-12 py-28 max-w-7xl mx-auto">
-      {/* Section label */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-6 h-px bg-blue-500" />
-        <span className="text-xs font-semibold text-blue-400 tracking-widest uppercase">
-          The 7-Day Sprint
-        </span>
-      </div>
+      <Reveal>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-6 h-px bg-blue-500" />
+          <span className="text-xs font-semibold text-blue-400 tracking-widest uppercase">
+            The 7-Day Sprint
+          </span>
+        </div>
+        <h2 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">
+          From Feedback to Infrastructure.
+        </h2>
+        <p className="text-white/40 text-lg mb-16 max-w-xl">
+          One Chief of Staff feedback loop. Seven days. A production-ready agentic platform.
+        </p>
+      </Reveal>
 
-      <h2 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">
-        From Feedback to Infrastructure.
-      </h2>
-      <p className="text-white/40 text-lg mb-16 max-w-xl">
-        One Chief of Staff feedback loop. Seven days. A production-ready agentic platform.
-      </p>
-
-      {/* Version cards + connector */}
       <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-6 items-center">
-        <VersionCard version={VERSIONS[0]} />
+        <Reveal delay={0}>
+          <VersionCard version={VERSIONS[0]} />
+        </Reveal>
 
-        {/* Center connector */}
-        <div className="flex flex-col items-center gap-3 px-2">
-          <div className="w-px h-8 bg-gradient-to-b from-transparent via-white/20 to-transparent md:hidden" />
-          <div className="glass rounded-2xl px-4 py-3 flex flex-col items-center gap-1">
-            <Clock size={16} className="text-blue-400" />
-            <span className="text-lg font-black text-white">7</span>
-            <span className="text-[10px] font-semibold text-white/40 tracking-wider uppercase">Days</span>
-          </div>
-          <ArrowRight size={18} className="text-blue-500/60 hidden md:block" />
-          <div className="w-px h-8 bg-gradient-to-b from-transparent via-white/20 to-transparent md:hidden" />
-        </div>
-
-        <VersionCard version={VERSIONS[1]} />
-      </div>
-
-      {/* Narrative callout */}
-      <div className="mt-10 glass rounded-2xl p-6 md:p-8 border-l-4 border-l-blue-500 flex flex-col md:flex-row items-start md:items-center gap-4">
-        <div className="p-3 rounded-xl bg-blue-500/10 shrink-0">
-          <TrendingUp size={22} className="text-blue-400" />
-        </div>
-        <div>
-          <p className="text-white font-semibold text-lg leading-snug">
-            "One week. One feedback loop. An entire architecture evolution."
-          </p>
-          <p className="text-white/40 text-sm mt-1">
-            V1 → V2 represents the operational thesis: enterprise-grade AI is built through rapid, structured iteration — not extended planning cycles.
-          </p>
-        </div>
-        <div className="flex flex-col gap-2 md:ml-auto shrink-0">
-          {["FHA Audit → Agentic Hub", "Manual → RESO-Compliant", "Single Model → 3-Engine Orchestration"].map((item) => (
-            <div key={item} className="flex items-center gap-2 text-xs text-white/50">
-              <CheckCircle2 size={12} className="text-blue-400 shrink-0" />
-              {item}
+        <Reveal delay={120}>
+          <div className="flex flex-col items-center gap-3 px-2">
+            <div className="w-px h-8 bg-gradient-to-b from-transparent via-white/20 to-transparent md:hidden" />
+            <div className="glass rounded-2xl px-4 py-3 flex flex-col items-center gap-1">
+              <Clock size={16} className="text-blue-400" />
+              <span className="text-lg font-black text-white">7</span>
+              <span className="text-[10px] font-semibold text-white/40 tracking-wider uppercase">Days</span>
             </div>
-          ))}
-        </div>
+            <ArrowRight size={18} className="text-blue-500/60 hidden md:block" />
+            <div className="w-px h-8 bg-gradient-to-b from-transparent via-white/20 to-transparent md:hidden" />
+          </div>
+        </Reveal>
+
+        <Reveal delay={240}>
+          <VersionCard version={VERSIONS[1]} />
+        </Reveal>
       </div>
+
+      <Reveal delay={100}>
+        <div className="mt-10 glass rounded-2xl p-6 md:p-8 border-l-4 border-l-blue-500 flex flex-col md:flex-row items-start md:items-center gap-4">
+          <div className="p-3 rounded-xl bg-blue-500/10 shrink-0">
+            <TrendingUp size={22} className="text-blue-400" />
+          </div>
+          <div>
+            <p className="text-white font-semibold text-lg leading-snug">
+              "One week. One feedback loop. An entire architecture evolution."
+            </p>
+            <p className="text-white/40 text-sm mt-1">
+              V1 → V2 represents the operational thesis: enterprise-grade AI is built through rapid, structured iteration — not extended planning cycles.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2 md:ml-auto shrink-0">
+            {["FHA Audit → Agentic Hub", "Manual → RESO-Compliant", "Single Model → 3-Engine Orchestration"].map((item) => (
+              <div key={item} className="flex items-center gap-2 text-xs text-white/50">
+                <CheckCircle2 size={12} className="text-blue-400 shrink-0" />
+                {item}
+              </div>
+            ))}
+          </div>
+        </div>
+      </Reveal>
     </section>
   );
 }
@@ -370,39 +494,25 @@ function PortfolioCard({ project }) {
         boxShadow: `0 0 40px ${project.accentGlow}`,
       }}
     >
-      {/* Icon + Tag */}
       <div className="flex items-start justify-between">
         <div
           className="p-3 rounded-2xl"
-          style={{
-            background: `${project.accent}18`,
-            border: `1px solid ${project.accent}30`,
-          }}
+          style={{ background: `${project.accent}18`, border: `1px solid ${project.accent}30` }}
         >
           <Icon size={24} style={{ color: project.accent }} />
         </div>
         <span
           className="text-xs font-semibold px-3 py-1 rounded-full"
-          style={{
-            background: `${project.accent}15`,
-            color: project.accent,
-            border: `1px solid ${project.accent}30`,
-          }}
+          style={{ background: `${project.accent}15`, color: project.accent, border: `1px solid ${project.accent}30` }}
         >
           {project.tag}
         </span>
       </div>
-
-      {/* Content */}
       <div className="flex flex-col gap-2">
         <h3 className="text-2xl font-bold text-white">{project.title}</h3>
-        <p className="text-sm font-medium" style={{ color: project.accent }}>
-          {project.tagline}
-        </p>
+        <p className="text-sm font-medium" style={{ color: project.accent }}>{project.tagline}</p>
         <p className="text-sm text-white/40 leading-relaxed mt-1">{project.description}</p>
       </div>
-
-      {/* CTA */}
       <div
         className="mt-auto flex items-center gap-2 text-sm font-semibold group-hover:gap-3 transition-all"
         style={{ color: project.accent }}
@@ -416,25 +526,26 @@ function PortfolioCard({ project }) {
 function PortfolioSection() {
   return (
     <section className="relative px-6 md:px-12 py-20 max-w-7xl mx-auto">
-      {/* Section label */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-6 h-px bg-violet-500" />
-        <span className="text-xs font-semibold text-violet-400 tracking-widest uppercase">
-          Strategic Portfolio
-        </span>
-      </div>
+      <Reveal>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-6 h-px bg-violet-500" />
+          <span className="text-xs font-semibold text-violet-400 tracking-widest uppercase">
+            Strategic Portfolio
+          </span>
+        </div>
+        <h2 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">
+          Personal Innovation Lab.
+        </h2>
+        <p className="text-white/40 text-lg mb-14 max-w-xl">
+          Independent ventures exploring the frontier of AI-native product design.
+        </p>
+      </Reveal>
 
-      <h2 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">
-        Personal Innovation Lab.
-      </h2>
-      <p className="text-white/40 text-lg mb-14 max-w-xl">
-        Independent ventures exploring the frontier of AI-native product design.
-      </p>
-
-      {/* Bento grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {PORTFOLIO.map((project) => (
-          <PortfolioCard key={project.title} project={project} />
+        {PORTFOLIO.map((project, i) => (
+          <Reveal key={project.title} delay={i * 150}>
+            <PortfolioCard project={project} />
+          </Reveal>
         ))}
       </div>
     </section>
@@ -443,54 +554,41 @@ function PortfolioSection() {
 
 function CapabilitiesSection() {
   const capabilities = [
-    {
-      icon: Activity,
-      title: "Agentic Orchestration",
-      description: "Multi-agent pipeline design with parallel execution and graceful fallback chains.",
-    },
-    {
-      icon: Database,
-      title: "RESO v2.0 Compliance",
-      description: "Full data dictionary mapping for MLS push with DPA namespace preservation.",
-    },
-    {
-      icon: Zap,
-      title: "Velocity of Iteration",
-      description: "Production-grade platform evolution in 7 days from a single feedback session.",
-    },
-    {
-      icon: Shield,
-      title: "Regulatory Intelligence",
-      description: "FHA/Fair Housing compliance detection with GPT-4o-mini at temperature 0.1.",
-    },
+    { icon: Activity, title: "Agentic Orchestration", description: "Multi-agent pipeline design with parallel execution and graceful fallback chains." },
+    { icon: Database, title: "RESO v2.0 Compliance", description: "Full data dictionary mapping for MLS push with DPA namespace preservation." },
+    { icon: Zap, title: "Velocity of Iteration", description: "Production-grade platform evolution in 7 days from a single feedback session." },
+    { icon: Shield, title: "Regulatory Intelligence", description: "FHA/Fair Housing compliance detection with GPT-4o-mini at temperature 0.1." },
   ];
 
   return (
     <section className="relative px-6 md:px-12 py-20 max-w-7xl mx-auto">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-6 h-px bg-emerald-500" />
-        <span className="text-xs font-semibold text-emerald-400 tracking-widest uppercase">
-          Core Capabilities
-        </span>
-      </div>
-
-      <h2 className="text-4xl md:text-5xl font-black text-white mb-14 tracking-tight">
-        The Operating Thesis.
-      </h2>
+      <Reveal>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-6 h-px bg-emerald-500" />
+          <span className="text-xs font-semibold text-emerald-400 tracking-widest uppercase">
+            Core Capabilities
+          </span>
+        </div>
+        <h2 className="text-4xl md:text-5xl font-black text-white mb-14 tracking-tight">
+          The Operating Thesis.
+        </h2>
+      </Reveal>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {capabilities.map((cap) => {
+        {capabilities.map((cap, i) => {
           const Icon = cap.icon;
           return (
-            <div key={cap.title} className="glass glass-hover rounded-2xl p-6 flex flex-col gap-4">
-              <div className="p-2.5 rounded-xl bg-white/5 w-fit">
-                <Icon size={20} className="text-white/60" />
+            <Reveal key={cap.title} delay={i * 80}>
+              <div className="glass glass-hover rounded-2xl p-6 flex flex-col gap-4 h-full">
+                <div className="p-2.5 rounded-xl bg-white/5 w-fit">
+                  <Icon size={20} className="text-white/60" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold text-white mb-1.5">{cap.title}</h4>
+                  <p className="text-xs text-white/40 leading-relaxed">{cap.description}</p>
+                </div>
               </div>
-              <div>
-                <h4 className="text-sm font-semibold text-white mb-1.5">{cap.title}</h4>
-                <p className="text-xs text-white/40 leading-relaxed">{cap.description}</p>
-              </div>
-            </div>
+            </Reveal>
           );
         })}
       </div>
@@ -502,46 +600,31 @@ function Footer() {
   return (
     <footer className="relative px-6 md:px-12 py-16 border-t border-white/5">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="flex flex-col gap-1">
-          <p className="text-white font-semibold">AI Strategy Operations Director</p>
-          <p className="text-white/30 text-sm">
-            Prepared for <span className="text-white/60">Mickey Neuberger, CMO — Realtor.com</span>
-          </p>
-        </div>
-
+        <Reveal>
+          <div className="flex flex-col gap-1">
+            <p className="text-white font-semibold">AI Strategy Operations Director</p>
+            <p className="text-white/30 text-sm">
+              Prepared for <span className="text-white/60">Mickey Neuberger, CMO — Realtor.com</span>
+            </p>
+          </div>
+        </Reveal>
         <div className="flex items-center gap-6">
-          <a
-            href="https://intelligenceapp.streamlit.app/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-white/30 hover:text-white/70 transition-colors flex items-center gap-1.5"
-          >
-            Intelligence Hub <ExternalLink size={11} />
-          </a>
-          <a
-            href="https://intelligencehub-three.vercel.app/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-white/30 hover:text-white/70 transition-colors flex items-center gap-1.5"
-          >
-            FHA Prototype <ExternalLink size={11} />
-          </a>
-          <a
-            href="https://nomadsync.vercel.app/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-white/30 hover:text-white/70 transition-colors flex items-center gap-1.5"
-          >
-            Nomadsync <ExternalLink size={11} />
-          </a>
-          <a
-            href="https://aegis-clean.vercel.app/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-white/30 hover:text-white/70 transition-colors flex items-center gap-1.5"
-          >
-            Pur-cision <ExternalLink size={11} />
-          </a>
+          {[
+            { label: "Intelligence Hub", url: "https://intelligenceapp.streamlit.app/" },
+            { label: "FHA Prototype", url: "https://intelligencehub-three.vercel.app/" },
+            { label: "Nomadsync", url: "https://nomadsync.vercel.app/" },
+            { label: "Pur-cision", url: "https://aegis-clean.vercel.app/" },
+          ].map(({ label, url }) => (
+            <a
+              key={label}
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-white/30 hover:text-white/70 transition-colors flex items-center gap-1.5"
+            >
+              {label} <ExternalLink size={11} />
+            </a>
+          ))}
         </div>
       </div>
     </footer>
@@ -551,10 +634,15 @@ function Footer() {
 // ─── App ─────────────────────────────────────────────────────────────────────
 
 export default function App() {
+  const scrollY = useScrollY();
+  const progress = useScrollProgress();
+  const navScrolled = scrollY > 60;
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white">
-      <NavBar />
-      <HeroSection />
+      <ScrollProgressBar progress={progress} />
+      <NavBar scrolled={navScrolled} />
+      <HeroSection scrollY={scrollY} />
       <VelocitySection />
       <CapabilitiesSection />
       <PortfolioSection />

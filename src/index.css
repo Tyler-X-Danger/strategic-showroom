@@ -76,6 +76,18 @@ body {
   z-index: 0;
 }
 
+/* Scroll cue animations */
+@keyframes scrollDot {
+  0%   { opacity: 1; transform: translateY(0); }
+  60%  { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 0; transform: translateY(10px); }
+}
+
+@keyframes chevronFade {
+  0%, 100% { opacity: 0.2; }
+  50%       { opacity: 0.7; }
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
