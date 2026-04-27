@@ -162,12 +162,16 @@ function NavBar({ scrolled }) {
         borderBottom: scrolled ? "1px solid rgba(255,255,255,0.06)" : "1px solid transparent",
       }}
     >
-      <div className="glass rounded-full px-4 py-2 flex items-center gap-2">
+      <a
+        href="#"
+        onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+        className="glass glass-hover rounded-full px-4 py-2 flex items-center gap-2"
+      >
         <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse-slow" />
         <span className="text-xs font-medium text-white/60 tracking-widest uppercase">
           AI Strategy Portfolio
         </span>
-      </div>
+      </a>
       <a
         href="https://intelligenceapp.streamlit.app/"
         target="_blank"
