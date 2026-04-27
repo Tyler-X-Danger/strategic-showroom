@@ -170,7 +170,7 @@ function NavBar({ scrolled }) {
         {/* Wordmark: TYLER [diamond] DANGER — diamond IS the X */}
         <span className="flex items-center gap-2 text-xs font-light text-white/60 tracking-[0.2em] uppercase">
           Tyler
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
             <defs>
               <linearGradient id="navXGrad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
                 <stop offset="0%" stopColor="#06b6d4" />
