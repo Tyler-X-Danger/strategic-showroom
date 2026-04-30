@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Market Intelligence Agent — Executive Brief</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:    #0d1b2e;
+      --navy2:   #132338;
+      --navy3:   #1a2f47;
+      --border:  rgba(255,255,255,.08);
+      --border2: rgba(255,255,255,.14);
+      --blue:    #3b82f6;
+      --blue2:   #60a5fa;
+      --green:   #22c55e;
+      --amber:   #f59e0b;
+      --purple:  #a78bfa;
+      --text:    #e2e8f0;
+      --muted:   #7a90aa;
+      --light:   #94a3b8;
+      --radius:  14px;
+    }
+
+    body {
+      background: var(--navy);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      padding: 60px 24px 100px;
+    }
+
+    .page { max-width: 880px; margin: 0 auto; }
+
+    /* ── Cover ──────────────────────────────── */
+    .cover {
+      text-align: center;
+      padding: 0 0 64px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 64px;
+    }
+    .cover .eyebrow {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--blue2);
+      margin-bottom: 20px;
+    }
+    .cover h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 700;
+      letter-spacing: -.02em;
+      color: #fff;
+      line-height: 1.15;
+      margin-bottom: 20px;
+    }
+    .cover p {
+      font-size: 17px;
+      color: var(--light);
+      max-width: 560px;
+      margin: 0 auto 32px;
+      line-height: 1.65;
+    }
+    .cover-meta {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .meta-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--navy2);
+      border: 1px solid var(--border2);
+      border-radius: 24px;
+      padding: 6px 16px;
+      font-size: 12px;
+      color: var(--light);
+    }
+    .meta-pill .live-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: blink 2.2s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    /* ── Section ────────────────────────────── */
+    .section { margin-bottom: 64px; }
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 10px;
+    }
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -.01em;
+      margin-bottom: 8px;
+    }
+    .section-sub {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 32px;
+      max-width: 580px;
+    }
+
+    /* ── How it works ───────────────────────── */
+    .steps { display: flex; flex-direction: column; gap: 0; }
+    .step {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 20px;
+      align-items: flex-start;
+      position: relative;
+      padding-bottom: 32px;
+    }
+    .step:last-child { padding-bottom: 0; }
+    .step-left { display: flex; flex-direction: column; align-items: center; }
+    .step-num {
+      width: 40px; height: 40px;
+      background: var(--navy3);
+      border: 1px solid var(--border2);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700;
+      color: var(--blue2);
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+    .step-line {
+      width: 1px;
+      flex: 1;
+      background: var(--border);
+      margin-top: 8px;
+    }
+    .step:last-child .step-line { display: none; }
+    .step-body { padding-top: 8px; }
+    .step-title { font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+    .step-desc  { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .step-example {
+      margin-top: 10px;
+      display: inline-block;
+      font-size: 12px;
+      font-style: italic;
+      color: var(--blue2);
+      background: rgba(59,130,246,.1);
+      border: 1px solid rgba(59,130,246,.2);
+      border-radius: 6px;
+      padding: 4px 12px;
+    }
+
+    /* ── Capability cards ───────────────────── */
+    .cap-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
+    }
+    .cap-card {
+      background: var(--navy2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+    }
+    .cap-icon { font-size: 26px; margin-bottom: 12px; display: block; }
+    .cap-name  { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+    .cap-desc  { font-size: 13px; color: var(--muted); line-height: 1.55; }
+
+    /* ── Two-column divider ─────────────────── */
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 600px) { .split { grid-template-columns: 1fr; } }
+
+    /* ── Roadmap row ─────────────────────────── */
+    .roadmap { display: flex; flex-direction: column; gap: 12px; }
+    .roadmap-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      background: var(--navy2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+    }
+    .roadmap-item.highlight {
+      border-color: rgba(59,130,246,.35);
+      background: linear-gradient(135deg, rgba(59,130,246,.07), rgba(167,139,250,.05));
+    }
+    .roadmap-icon {
+      font-size: 22px;
+      width: 44px; height: 44px;
+      background: var(--navy3);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .roadmap-text .title { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .roadmap-text .desc  { font-size: 13px; color: var(--muted); line-height: 1.55; }
+    .tag-inline {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    .tag-now    { background: rgba(34,197,94,.15);  color: var(--green); }
+    .tag-next   { background: rgba(245,158,11,.12); color: var(--amber); }
+    .tag-future { background: rgba(167,139,250,.12); color: var(--purple); }
+
+    /* ── Quote / callout ─────────────────────── */
+    .callout {
+      background: linear-gradient(135deg, rgba(59,130,246,.1), rgba(167,139,250,.08));
+      border: 1px solid rgba(59,130,246,.25);
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      text-align: center;
+      margin: 0 0 64px;
+    }
+    .callout p {
+      font-size: 18px;
+      font-weight: 500;
+      color: #fff;
+      line-height: 1.6;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    .callout .source {
+      display: block;
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* ── What it can't do / JIRA ─────────────── */
+    .boundary-box {
+      background: var(--navy2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .boundary-header {
+      background: var(--navy3);
+      padding: 14px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--light);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .boundary-body { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+    .boundary-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .boundary-item .bi-icon { flex-shrink: 0; margin-top: 1px; }
+    .boundary-item strong   { color: var(--text); }
+
+    /* ── Footer ──────────────────────────────── */
+    .footer {
+      margin-top: 80px;
+      padding-top: 28px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .footer p { font-size: 12px; color: var(--muted); }
+    .footer .version {
+      font-size: 11px;
+      color: var(--blue);
+      background: rgba(59,130,246,.1);
+      border: 1px solid rgba(59,130,246,.2);
+      border-radius: 20px;
+      padding: 3px 12px;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── Cover ─────────────────────────── -->
+  <div class="cover">
+    <span class="eyebrow">Executive Briefing · Prototype</span>
+    <h1>Market Intelligence<br>in Slack</h1>
+    <p>A working prototype that lets marketing teams ask real estate data questions in plain English — and get back analysis, market context, and charts in seconds.</p>
+    <div class="cover-meta">
+      <span class="meta-pill"><span class="live-dot"></span> Live &amp; Running</span>
+      <span class="meta-pill">🤖 GPT-4o Powered</span>
+      <span class="meta-pill">⚡ 3-Service Go Architecture</span>
+    </div>
+  </div>
+
+  <!-- ── Callout ────────────────────────── -->
+  <div class="callout">
+    <p>"Instead of opening a dashboard or waiting on an analyst, a marketer types a question in Slack and gets a data-backed answer in under five seconds."</p>
+    <span class="source">Current prototype · DuckDB mock data · Slack Socket Mode</span>
+  </div>
+
+  <!-- ── How it works ──────────────────── -->
+  <div class="section">
+    <div class="section-label">The Flow</div>
+    <div class="section-title">How a query becomes an answer</div>
+    <div class="section-sub">No dashboards, no tickets, no waiting. The agent handles everything between the question and the insight.</div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div>
+        <div class="step-body">
+          <div class="step-title">Marketer asks a question in Slack</div>
+          <div class="step-desc">@mention the bot with any plain-English question about buyer segments, property types, market trends, or specific zip codes. No SQL, no syntax, no training required.</div>
+          <span class="step-example">"@agent — where are First-Time Buyers growing fastest right now?"</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div>
+        <div class="step-body">
+          <div class="step-title">The agent figures out what data to pull</div>
+          <div class="step-desc">GPT-4o reads the intent and selects the right combination of tools — automatically. A single question may trigger multiple data calls in parallel. The user never sees this complexity.</div>
+          <span class="step-example">Runs: top markets → market context for each top zip → chart generation</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-left"><div class="step-num">3</div><div class="step-line"></div></div>
+        <div class="step-body">
+          <div class="step-title">Data is fetched from the intelligence layer</div>
+          <div class="step-desc">Tool calls route to purpose-built microservices — a data server and a visualization server — running as subprocesses via the Model Context Protocol. Today backed by DuckDB; tomorrow, Snowflake.</div>
+          <span class="step-example">5 tools across 2 services: growth, trends, property types, market context, charts</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-left"><div class="step-num">4</div><div class="step-line"></div></div>
+        <div class="step-body">
+          <div class="step-title">A formatted answer — and a chart if needed — lands in the channel</div>
+          <div class="step-desc">GPT-4o synthesizes all the data into a scannable Slack message: top zip codes, growth rates, average sale prices, days-on-market, and a key insight. Trend charts are generated and uploaded automatically.</div>
+          <span class="step-example">Text summary + PNG chart uploaded directly to the Slack channel</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── What it can do today ──────────── -->
+  <div class="section">
+    <div class="section-label">Today</div>
+    <div class="section-title">What the prototype can do right now</div>
+    <div class="section-sub">All of the following work today against mock data — the same queries will work unchanged against live Snowflake data.</div>
+
+    <div class="cap-grid">
+      <div class="cap-card">
+        <span class="cap-icon">📍</span>
+        <div class="cap-name">Fastest-Growing Markets by Segment</div>
+        <div class="cap-desc">Top 10 zip codes ranked by buyer activity growth for any segment — First-Time Buyer, Move-Up Buyer, Investor, Luxury Buyer, or Retiree.</div>
+      </div>
+      <div class="cap-card">
+        <span class="cap-icon">🏠</span>
+        <div class="cap-name">Property Type Campaign Targeting</div>
+        <div class="cap-desc">Which zip codes and buyer profiles are buying Condos, Luxury Estates, New Construction, 55+ Communities, and more — ranked by growth.</div>
+      </div>
+      <div class="cap-card">
+        <span class="cap-icon">📊</span>
+        <div class="cap-name">Trend Charts Uploaded to Slack</div>
+        <div class="cap-desc">Ask for a trend chart and a PNG line chart showing 6 quarters of buyer activity appears directly in the channel. No download, no tool switch.</div>
+      </div>
+      <div class="cap-card">
+        <span class="cap-icon">🏡</span>
+        <div class="cap-name">Automatic Market Context</div>
+        <div class="cap-desc">Every growth answer is automatically enriched with supply/demand signals: median sale price, days on market, inventory count, list-to-sale ratio, and a hotness score.</div>
+      </div>
+      <div class="cap-card">
+        <span class="cap-icon">🔀</span>
+        <div class="cap-name">Side-by-Side Segment Comparisons</div>
+        <div class="cap-desc">Ask to compare two segments and the agent runs both queries in parallel, returning a unified analysis. No extra steps.</div>
+      </div>
+      <div class="cap-card">
+        <span class="cap-icon">❓</span>
+        <div class="cap-name">Instant Help Command</div>
+        <div class="cap-desc">Type <em>help</em> for an instant command reference — no AI call, no latency. Lists every capability with example phrasing.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── What it can't do → JIRA ────────── -->
+  <div class="section">
+    <div class="section-label">Out-of-Scope Handling</div>
+    <div class="section-title">When the agent can't answer — it files a ticket</div>
+    <div class="section-sub">Questions that fall outside the agent's current toolset shouldn't disappear into a Slack thread. The agent can be wired to JIRA to route them automatically.</div>
+
+    <div class="split">
+      <div class="boundary-box">
+        <div class="boundary-header">⚡ Today — agent responds with</div>
+        <div class="boundary-body">
+          <div class="boundary-item"><span class="bi-icon">·</span><span>An honest "I can't answer that yet" message with context on what data or capability is missing.</span></div>
+          <div class="boundary-item"><span class="bi-icon">·</span><span>A suggestion for how to rephrase or what the data team would need to build to support it.</span></div>
+        </div>
+      </div>
+      <div class="boundary-box" style="border-color: rgba(245,158,11,.25);">
+        <div class="boundary-header" style="background: rgba(245,158,11,.06);">🔮 With JIRA integration — agent would</div>
+        <div class="boundary-body">
+          <div class="boundary-item"><span class="bi-icon">·</span><span><strong>Auto-create a JIRA ticket</strong> in the correct project with the original question as the description.</span></div>
+          <div class="boundary-item"><span class="bi-icon">·</span><span><strong>Assign it</strong> to the right data team member based on request type (new dataset, new metric, new segment).</span></div>
+          <div class="boundary-item"><span class="bi-icon">·</span><span><strong>Reply in Slack</strong> with the ticket link so the requester has a paper trail — no follow-up needed.</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Roadmap ─────────────────────────── -->
+  <div class="section">
+    <div class="section-label">What's Next</div>
+    <div class="section-title">Where this goes with the right setup</div>
+    <div class="section-sub">These capabilities are all architecture-compatible with what's already built — each one is an additive layer, not a rewrite.</div>
+
+    <div class="roadmap">
+
+      <div class="roadmap-item highlight">
+        <div class="roadmap-icon">❄️</div>
+        <div class="roadmap-text">
+          <div class="title"><span class="tag-inline tag-next">Next</span>Live Snowflake Connection</div>
+          <div class="desc">Swap the DuckDB mock for a real Snowflake connection — no code changes to the agent layer. The data server is already designed for this. Every query the prototype runs today will run against production data immediately.</div>
+        </div>
+      </div>
+
+      <div class="roadmap-item">
+        <div class="roadmap-icon">🗂</div>
+        <div class="roadmap-text">
+          <div class="title"><span class="tag-inline tag-next">Next</span>JIRA Auto-Ticketing</div>
+          <div class="desc">When a question falls outside current capabilities, the agent creates a structured JIRA ticket in the data team's backlog — with the question, requester, channel, and priority — and replies with the ticket link in Slack.</div>
+        </div>
+      </div>
+
+      <div class="roadmap-item">
+        <div class="roadmap-icon">📬</div>
+        <div class="roadmap-text">
+          <div class="title"><span class="tag-inline tag-next">Next</span>Data Team Fielding</div>
+          <div class="desc">The agent becomes the first point of contact for data requests. It classifies intent, routes to the right team or tool, and only escalates what actually needs a human. Reduces ad-hoc Slack pings to the data team.</div>
+        </div>
+      </div>
+
+      <div class="roadmap-item">
+        <div class="roadmap-icon">📅</div>
+        <div class="roadmap-text">
+          <div class="title"><span class="tag-inline tag-future">Future</span>Scheduled Market Briefings</div>
+          <div class="desc">A weekly summary — top growing markets, notable shifts, any hotness score changes — pushed automatically to a designated Slack channel every Monday morning. Zero manual work.</div>
+        </div>
+      </div>
+
+      <div class="roadmap-item">
+        <div class="roadmap-icon">🚨</div>
+        <div class="roadmap-text">
+          <div class="title"><span class="tag-inline tag-future">Future</span>Market Alert Subscriptions</div>
+          <div class="desc">Marketers subscribe to triggers: "alert me when Charlotte First-Time Buyer growth crosses 50%" or "notify me if Luxury Estate DOM drops below 30 days." Alerts fire in Slack the moment the threshold is crossed.</div>
+        </div>
+      </div>
+
+      <div class="roadmap-item">
+        <div class="roadmap-icon">📋</div>
+        <div class="roadmap-text">
+          <div class="title"><span class="tag-inline tag-future">Future</span>Campaign Brief Generation</div>
+          <div class="desc">Turn a market insight query into a formatted campaign brief — target segment, top zip codes, recommended property types, pricing context, and suggested creative angle — ready to hand off to the campaign team or export as a doc.</div>
+        </div>
+      </div>
+
+      <div class="roadmap-item">
+        <div class="roadmap-icon">🔗</div>
+        <div class="roadmap-text">
+          <div class="title"><span class="tag-inline tag-future">Future</span>CRM &amp; Audience List Push</div>
+          <div class="desc">After identifying the top markets for a segment, the agent pushes those zip codes directly into a Salesforce or HubSpot audience segment — no copy/paste, no CSV exports, no manual list builds.</div>
+        </div>
+      </div>
+
+      <div class="roadmap-item">
+        <div class="roadmap-icon">💬</div>
+        <div class="roadmap-text">
+          <div class="title"><span class="tag-inline tag-future">Future</span>Cross-Channel Distribution</div>
+          <div class="desc">One query in one channel, results posted to multiple stakeholder channels automatically — e.g., an Investor markets update goes to the acquisitions channel, the marketing channel, and the exec digest channel simultaneously.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── What's powering it ─────────────── -->
+  <div class="section">
+    <div class="section-label">Under the Hood</div>
+    <div class="section-title">Built for extensibility</div>
+    <div class="section-sub">Every capability is a self-contained tool that the AI discovers and calls automatically. Adding a new data source means adding a new tool — nothing else changes.</div>
+
+    <div class="split">
+      <div class="boundary-box">
+        <div class="boundary-header">🗄 Data Intelligence Layer</div>
+        <div class="boundary-body">
+          <div class="boundary-item"><span class="bi-icon">·</span><span><strong>Fastest-growing zip codes</strong> by buyer segment</span></div>
+          <div class="boundary-item"><span class="bi-icon">·</span><span><strong>Property type leaders</strong> — best markets by type</span></div>
+          <div class="boundary-item"><span class="bi-icon">·</span><span><strong>6-quarter growth trends</strong> per segment and zip</span></div>
+          <div class="boundary-item"><span class="bi-icon">·</span><span><strong>Market context</strong> — pricing, inventory, hotness score</span></div>
+        </div>
+      </div>
+      <div class="boundary-box">
+        <div class="boundary-header">📊 Visualization Layer</div>
+        <div class="boundary-body">
+          <div class="boundary-item"><span class="bi-icon">·</span><span><strong>Multi-series line charts</strong> generated on demand</span></div>
+          <div class="boundary-item"><span class="bi-icon">·</span><span><strong>PNG uploaded to Slack</strong> — no links, no downloads</span></div>
+          <div class="boundary-item"><span class="bi-icon">·</span><span>Runs as a <strong>separate service</strong> — swap renderer without touching the agent</span></div>
+          <div class="boundary-item"><span class="bi-icon">·</span><span>Extensible to bar charts, heatmaps, cohort views</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Footer ────────────────────────── -->
+  <div class="footer">
+    <p>Market Intelligence Agent · Executive Brief</p>
+    <span class="version">Prototype v0.2 · DuckDB Mock → Snowflake Ready</span>
+  </div>
+
+</div>
+</body>
+</html>

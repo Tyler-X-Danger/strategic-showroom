@@ -13,6 +13,7 @@ import {
   Clock,
   TrendingUp,
   CheckCircle2,
+  MessageSquare,
 } from "lucide-react";
 
 // ─── Hooks ───────────────────────────────────────────────────────────────────
@@ -127,6 +128,19 @@ const PORTFOLIO = [
     accentBg: "rgba(168, 85, 247, 0.08)",
     accentBorder: "rgba(168, 85, 247, 0.25)",
     accentGlow: "rgba(168, 85, 247, 0.15)",
+  },
+  {
+    title: "Market Intelligence Agent",
+    url: "/market-intelligence-brief.html",
+    tagline: "Real estate market analysis in plain English — via Slack.",
+    description:
+      "Ask any buyer segment or property type question in Slack and get back top zip codes, trend charts, and housing market context in seconds. GPT-4o routes queries through an MCP microservice layer and uploads charts directly to the channel.",
+    tag: "Agentic · Real Estate",
+    icon: MessageSquare,
+    accent: "#10b981",
+    accentBg: "rgba(16, 185, 129, 0.08)",
+    accentBorder: "rgba(16, 185, 129, 0.25)",
+    accentGlow: "rgba(16, 185, 129, 0.15)",
   },
 ];
 
