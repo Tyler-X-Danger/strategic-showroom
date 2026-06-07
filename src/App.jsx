@@ -145,7 +145,7 @@ const PORTFOLIO = [
   },
   {
     title: "AmpAI Hub",
-    url: "https://github.com/Tyler-X-Danger/realtor-ai-proto-rag",
+    url: "https://tyler-x-danger.github.io/realtor-ai-proto-rag/",
     tagline: "Realtor.com internal developer portal — RAG-powered, Backstage-style.",
     description:
       "Full-stack internal platform prototype for Realtor.com's AI Platform team. Python FastAPI + LlamaIndex RAG backend trained on the internal AI playbook. Dark-mode React dashboard with live token spend analytics, LLM gateway controls, and a GPT-4o-mini chat interface grounded in real knowledge.",
